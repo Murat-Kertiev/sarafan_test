@@ -4,7 +4,7 @@ from django.db import models
 class Category(models.Model):
     name = models.CharField(max_length=200)
     slug = models.CharField(max_length=200)
-    image = models.ImageField()
+    image = models.ImageField(upload_to='categories/')
 
     class Meta:
         ordering = ['name',]
@@ -21,7 +21,7 @@ class Category(models.Model):
 class Subcategory(models.Model):
     name = models.CharField(max_length=200)
     slug = models.SlugField()
-    image = models.ImageField()
+    image = models.ImageField(upload_to='subcategories/')
     parent_category = models.ForeignKey(Category,
                                         related_name='subcategories',
                                         on_delete=models.CASCADE)
@@ -41,7 +41,7 @@ class Subcategory(models.Model):
 class Product(models.Model):
     name = models.CharField(max_length=200)
     slug = models.SlugField(max_length=200)
-    image = models.ImageField()
+    image = models.ImageField(upload_to='products/')
     price = models.DecimalField(max_digits=10,
                                 decimal_places=2)
     subcategory = models.ForeignKey(Subcategory,
@@ -49,6 +49,7 @@ class Product(models.Model):
                                     related_name='products')
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
+    available = models.BooleanField(default=True)
 
     class Meta:
         ordering = ['name',]
