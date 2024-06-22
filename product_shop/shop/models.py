@@ -1,10 +1,15 @@
 from django.db import models
+from django.contrib.auth import get_user_model
+
+
+User = get_user_model()
 
 
 class Category(models.Model):
-    name = models.CharField(max_length=200)
-    slug = models.CharField(max_length=200)
-    image = models.ImageField(upload_to='categories/')
+    """Модель категорий продуктов."""
+    name = models.CharField(max_length=200, verbose_name='Название')
+    slug = models.CharField(max_length=200, verbose_name='ULR')
+    image = models.ImageField(upload_to='categories/', verbose_name='Изображение')
 
     class Meta:
         ordering = ['name',]
@@ -19,12 +24,14 @@ class Category(models.Model):
 
 
 class Subcategory(models.Model):
-    name = models.CharField(max_length=200)
-    slug = models.SlugField()
+    """Модель подкатегорий продуктов."""
+    name = models.CharField(max_length=200, verbose_name='Название')
+    slug = models.SlugField(max_length=200, verbose_name='URL')
     image = models.ImageField(upload_to='subcategories/')
     parent_category = models.ForeignKey(Category,
                                         related_name='subcategories',
-                                        on_delete=models.CASCADE)
+                                        on_delete=models.CASCADE,
+                                        verbose_name='Подкатегория')
 
     class Meta:
         ordering = ['name']
@@ -39,6 +46,7 @@ class Subcategory(models.Model):
 
 
 class Product(models.Model):
+    """Модель продуктов."""
     name = models.CharField(max_length=200)
     slug = models.SlugField(max_length=200)
     image = models.ImageField(upload_to='products/')
@@ -58,6 +66,31 @@ class Product(models.Model):
             models.Index(fields=['name']),
             models.Index(fields=['-created']),
         ]
+        verbose_name = 'продукт'
+        verbose_name_plural = 'продукты'
 
     def __str__(self):
         return self.name
+
+
+class Cart(models.Model):
+    """Модель корзины продуктов."""
+    user = models.ForeignKey(User,
+                             on_delete=models.CASCADE,
+                             related_name='shopping_carts',
+                             verbose_name='Пользователь')
+    product = models.ForeignKey(Product,
+                                on_delete=models.CASCADE,
+                                related_name='shopping_cart')
+    amount = models.PositiveIntegerField(verbose_name='Количество')
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'product'],
+                name='unique_user_product',
+            )
+        ]
+        ordering = ['id']
+        verbose_name = 'корзина'
+        verbose_name_plural = 'корзины'
